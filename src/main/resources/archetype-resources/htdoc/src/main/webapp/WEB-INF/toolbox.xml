@@ -8,11 +8,11 @@
 	<tool>
 		<key>dateUtils</key>
 		<scope>request</scope>
-		<class>com.hunting.webserver.core.utils.DateUtils</class>
+		<class>${package}.core.utils.DateUtils</class>
 	</tool>
 	<tool>
 		<key>arithUtils</key>
 		<scope>request</scope>
-		<class>com.hunting.webserver.core.utils.ArithUtils</class>
+		<class>${package}.core.utils.ArithUtils</class>
 	</tool>
 </toolbox> 
