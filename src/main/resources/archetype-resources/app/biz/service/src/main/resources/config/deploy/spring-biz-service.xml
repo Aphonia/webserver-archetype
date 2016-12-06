@@ -17,11 +17,6 @@
     <context:annotation-config />
 	<context:component-scan base-package="${package}.biz" annotation-config="true" />
 	
-	<!-- hazelcast集群缓存 -->
-	<bean id="hazelcastFactory" class="${package}.biz.distrbute.HazelcastFactory" init-method="init">
-    	<property name="clusterDir" value="${cache.root.dir}"/>
-    </bean>
-	
 	<!-- dozerMapper config start -->
 	<bean id="dozerBeanMapper" class="${package}.core.utils.spring.DozerBeanMapperFactoryBean" init-method="init">
 		<property name="mappingFiles">

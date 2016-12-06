@@ -7,26 +7,26 @@ import java.util.Map;
 /**
  * baseService基础类
  * @author lim
- * @param <V,T,P>
+ * @param <P>
  */
-public interface BaseService<V,T,P> {
+public interface BaseService<P> {
 	/**
 	 * 创建po
 	 * @param vo
 	 * @return 
 	 * @author lim
 	 */
-	Serializable create(V vo);
+    Serializable create(P p);
 	
 	/**
 	 * 批量添加
 	 * @param vo
 	 */
-	int batchCreate(List<V> vos);
+	int batchCreate(List<P> p);
 	
-	int batchUpdate(List<V> vos);
+	int batchUpdate(List<P> p);
 	
-	int batchDelete(List<V> vos);
+	int batchDelete(List<P> p);
 	/**
 	 * 删除po
 	 * @param vo
@@ -34,7 +34,7 @@ public interface BaseService<V,T,P> {
 	 * @return 
 	 * @author lim
 	 */
-	 Integer delete(V vo,boolean soft);
+	 Integer delete(P p,boolean soft);
 	 
 	 /**
 	  * 删除po
@@ -47,7 +47,7 @@ public interface BaseService<V,T,P> {
 	 * @param vo 
 	 * @author lim
 	 */
-	 Integer update(V vo);
+	 Integer update(P p);
 	/**
 	 * 查询分页
 	 * @param params
@@ -56,7 +56,7 @@ public interface BaseService<V,T,P> {
 	 * @return 
 	 * @author lim
 	 */
-	 List<T> queryByPage(Map<String,Object> params,int currPage,int pageSize);
+	 List<P> queryByPage(Map<String,Object> params,int currPage,int pageSize);
 	 /**
 	  * 调用指定sql查询分页
 	  * @param params
@@ -65,7 +65,7 @@ public interface BaseService<V,T,P> {
 	  * @param pageSize
 	  * @return
 	  */
-	 List<T> queryByPage(Map<String,Object> params,String sqlId,int currPage,int pageSize);
+	 List<P> queryByPage(Map<String,Object> params,String sqlId,int currPage,int pageSize);
 	/**
 	 * 查询总数
 	 * @param params
@@ -87,18 +87,15 @@ public interface BaseService<V,T,P> {
 	 * @return 
 	 * @author lim
 	 */
-	 T findById(Serializable id);
+	 P findById(Serializable id);
 	 /**
 	  * 恢复删除的
 	  * @param id
 	  * @return
 	  */
-	 int restoreDel(V vo);
+	 int restoreDel(P vo);
 	 
-	 T queryByPO(Map<String,Object> params);
+	 P queryByPO(Map<String,Object> params);
 	 
-	 String queryByDualForString();
-	 
-	 Object queryByObject(String sqlId);
-
+	 String queryDual();
 }

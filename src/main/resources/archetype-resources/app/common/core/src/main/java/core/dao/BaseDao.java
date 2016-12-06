@@ -6,7 +6,6 @@
  */
 package ${package}.core.dao;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -101,28 +100,7 @@ public interface BaseDao<T> {
 	 */
 	List<T> queryByPage(Map<String,Object> params,String sqlName,Integer currPage,Integer pageSize) throws Exception;
 	
-	/**
-	 * 无条件查询所有
-	 * @return
-	 * @throws Exception
-	 */
-	List<T> queryAll()throws Exception;
-	/**
-	 * 查询序列 Integer(针对oracle)
-	 * @return
-	 * @throws Exception 
-	 * @author lim
-	 */
-	Integer queryByDual() throws Exception;
 	
-	/**
-	 * 查询Object
-	 * @param sqlId
-	 * @return
-	 * @throws Exception 
-	 * @author lim
-	 */
-	Object queryByObject(String sqlId) throws Exception;
 	/**
 	 * 批量插入
 	 * @param list
@@ -149,21 +127,11 @@ public interface BaseDao<T> {
 	int batchDeletePO(List<T> list) throws Exception;
 	
 	/**
-	 * 查询分页
-	 * @param params
-	 * @param currPage
-	 * @param pageSize
-	 * @return
-	 * @throws Exception
-	 */
-	List<T> queryByPage(List<Object> params,Integer currPage,Integer pageSize) throws Exception;
-	
-	/**
 	 * 查询对象
 	 * @param params
 	 * @return
 	 */
-	T queryByPO(Map<String,Object> params) throws SQLException;
+	T queryByPO(Map<String,Object> params) throws Exception;
 	
 	String queryByDualForString() throws Exception;
 }

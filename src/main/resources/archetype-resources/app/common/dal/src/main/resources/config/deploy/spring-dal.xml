@@ -2,8 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:task="http://www.springframework.org/schema/task" 
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
         http://www.springframework.org/schema/context 
@@ -13,50 +12,63 @@
         http://www.springframework.org/schema/task 
         http://www.springframework.org/schema/task/spring-task-3.0.xsd
         ">
-        
-	<!-- dateSource config -->
-	<bean id="dataSource" destroy-method="close" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		<property name="driverClass" value="${jdbc.driverClassName}" />
-		<property name="jdbcUrl" value="${jdbc.url}" />
-		<property name="user" value="${jdbc.username}" />
+
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
 		<property name="password" value="${jdbc.password}" />
-		<!--当连接池用完时客户端调用getConnection()后等待获取新连接的时间，超时后将抛出SQLException,如设为0则无限期等待。单位毫秒。Default: 0 -->
-<!-- 		<property name="checkoutTimeout" value="10000"/> -->
-		<!--最大空闲时间,1800秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->
-		<property name="maxIdleTime" value="60"/>
-		<!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
-		<property name="acquireIncrement" value="5"/>
-		<!--定义在从数据库获取新连接失败后重复尝试的次数。Default: 30 -->
-		<property name="acquireRetryAttempts" value="30"/>
-		<!--连接池中保留的最小连接数。-->
-		<property name="minPoolSize" value="50"/>
-		<!--连接池中保留的最大连接数。Default: 15 -->
-		<property name="maxPoolSize" value="100"/>
-		<!--每60秒检查所有连接池中的空闲连接。Default: 0 -->
-		<property name="idleConnectionTestPeriod" value="60" />
-		<!-- 关闭测试链接 -->
-		<property name="testConnectionOnCheckout" value="true"/>
-		
-		<property name="numHelperThreads" value="10"/>
+		<property name="filters" value="stat" />
+		<property name="maxActive" value="2000" />
+		<property name="initialSize" value="1" />
+		<property name="maxWait" value="60000" />
+		<property name="minIdle" value="1" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="50" />
 	</bean>
-	
+
 	<!-- jdbcTemplate config -->
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
-	<!-- iBatis config -->
-	<bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
-		<property name="configLocation" value="classpath:config/deploy/ibatis-conf.xml" />
-		<property name="dataSource" ref="dataSource" />
+
+	<bean id="dynamicDataSource" class="${package}.dal.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="${package}.dal.datasource.DataSourceContext">
+				<entry value-ref="dataSource" key="PROTAL" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="dataSource" />
 	</bean>
 
-	<bean id="sqlExecutor" class="${package}.core.ibatis.LimitSqlExecutor">
-		<property name="dialect">
-			<bean class="${package}.core.ibatis.MysqlDialect" />
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dynamicDataSource" />
+		<property name="mapperLocations" value="classpath:config/mybatis/*/*.xml" />
+		<property name="plugins">
+			<array>
+				<bean class="com.github.pagehelper.PageHelper">
+					<property name="properties">
+						<value>
+							dialect=mysql
+						</value>
+					</property>
+				</bean>
+			</array>
 		</property>
 	</bean>
-	
-    <context:annotation-config />
-	<context:component-scan base-package="${package}.dal.dao" annotation-config="true" />
-	
+
+	<context:annotation-config />
+	<context:component-scan base-package="${package}.dal.dao"
+		annotation-config="true" />
+
 </beans>

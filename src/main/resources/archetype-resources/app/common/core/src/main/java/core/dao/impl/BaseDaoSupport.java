@@ -7,16 +7,21 @@
 package ${package}.core.dao.impl;
 
 import java.io.Serializable;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ${package}.core.ibatis.BaseDaoiBatis;
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.log4j.Logger;
+
 import ${package}.core.utils.PropertyUtil;
-import com.ibatis.sqlmap.engine.execution.SqlExecutor;
 
 /**
  * 基础DAO抽象支持类(用户不直接使用)
@@ -25,24 +30,39 @@ import com.ibatis.sqlmap.engine.execution.SqlExecutor;
  * @date 2013-6-25 下午04:59:42
  * @updateInfo
  */
-public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
+public abstract class BaseDaoSupport<T> {
 	
 	
 	/** 泛型类 */
 	private final Class<T> clazz;
 	
-	private SqlExecutor sqlExecutor;
-
+	private static final Logger DEFAULT_LOGGER = Logger.getLogger(BaseDaoSupport.class);
+	
+	@Resource
+	protected SqlSessionFactory sqlSessionFactory;
+	
+	
+	
+	
 	/** 构造函数 */
 	public BaseDaoSupport(Class<T> clazz) {
 		this.clazz = clazz;
 	}
 
 	/** 查找PO */
-	@SuppressWarnings("unchecked")
 	public T findPO(Serializable id) throws Exception {
-		T o = (T) super.sqlMapClient.queryForObject(this.clazz.getSimpleName() + ".query_id", id);
-		return o;
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.selectOne(clazz.getName() + ".query_id", id);
+		} catch (Exception e){
+			DEFAULT_LOGGER.error(clazz.getName() + ".query_id error,",e);
+		} finally{
+			if (sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		return null;
 	}
 
 	/** 创建PO */
@@ -51,8 +71,19 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 	}
 	
 	/** 返回主键 */
-	public Serializable createPO(T t,String sqlId) throws Exception{
-		return (Serializable) sqlMapClient.insert(this.clazz.getSimpleName() + "." + sqlId, t);
+	public int createPO(T t,String sqlId) throws Exception{
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.insert(this.clazz.getName() + "." + sqlId, t);
+		} catch (Exception e){
+			DEFAULT_LOGGER.error(clazz.getName() + ".add error,",e);
+		} finally{
+			if (sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		return -1;
 	}
 
 	/** 删除PO */
@@ -61,14 +92,36 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 	}
 	
 	public int deletePO(T t,String sqlId) throws Exception{
-		return sqlMapClient.delete(t.getClass().getSimpleName() + "." + sqlId, t);
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.delete(this.clazz.getName() + "." + sqlId, t);
+		} catch (Exception e){
+			DEFAULT_LOGGER.error(clazz.getName() + ".delete error,",e);
+		} finally{
+			if (sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		return -1;
 	}
 	
 	public int deletePO(Map<String, Object> params) throws Exception {
 		if (params == null) {
 			params = new HashMap<String,Object>();
 		}
-		return sqlMapClient.delete(this.clazz.getSimpleName() + ".delete_map", params);
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.delete(this.clazz.getName() + "." + "delete_map", params);
+		} catch (Exception e){
+			DEFAULT_LOGGER.error(clazz.getName() + ".deletePO error,",e);
+		} finally {
+			if(sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		return -1;
 	}
 
 	/** 更新PO */
@@ -77,86 +130,91 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 	}
 	
 	public int updatePO(T t ,String sqlId) throws Exception{
-		return sqlMapClient.update(t.getClass().getSimpleName() + "." +sqlId, t);
-	}
-
-	/** 查询所有 */
-	@SuppressWarnings("unchecked")
-	public List<T> queryAll() throws Exception {
-		return sqlMapClient.queryForList(this.clazz.getSimpleName()
-				+ ".query_all");
+//		return sqlMapClient.update(t.getClass().getName() + "." +sqlId, t);
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.update(this.clazz.getName() + "." + sqlId, t);
+		} catch (Exception e){
+			DEFAULT_LOGGER.error(clazz.getName() + "." + sqlId +" error,",e);
+		} finally {
+			if(sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		return -1;
 	}
 
 	/** 分页 */
-	@SuppressWarnings("unchecked")
 	public List<T> queryByPage(Map<String, Object> params,Integer currPage,Integer pageSize) throws Exception {
-		if (params == null) {
-			params = new HashMap<String,Object>();
-		}
-		if(currPage == -1 && pageSize == -1){
-			return sqlMapClient.queryForList(this.clazz.getSimpleName()+".query",params);
-		}
-		return sqlMapClient.queryForList(this.clazz.getSimpleName() + ".query", params, currPage, pageSize);
+		return this.queryByPage(params, "query", currPage, pageSize);
 	}
 	
 	/** 调用sql */
-	@SuppressWarnings("unchecked")
-	public List<T> queryByPage(Map<String,Object> params,String sqlName,Integer currPage,Integer pageSize) throws Exception{
+	public List<T> queryByPage(Map<String,Object> params,String sqlId,Integer currPage,Integer pageSize) throws Exception{
 		if (params == null) {
 			params = new HashMap<String,Object>();
 		}
-		if(currPage == -1 && pageSize == -1){
-			return sqlMapClient.queryForList(this.clazz.getSimpleName()+"."+sqlName,params);
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			if(currPage == -1 && pageSize == -1){
+				return sqlSession.selectList(this.clazz.getName() + "." + sqlId, params);
+			}else{
+				RowBounds row = new RowBounds(pageSize * (currPage-1), pageSize);
+				return sqlSession.selectList(this.clazz.getName() + "." + sqlId, params, row);
+			}
+		}catch (Exception e){
+			DEFAULT_LOGGER.error(clazz.getName() + ".query error,",e);
+		} finally {
+			if(sqlSession != null){
+				sqlSession.close();
+			}
 		}
-		return sqlMapClient.queryForList(this.clazz.getSimpleName()+"."+sqlName,params,currPage,pageSize);
+		return null;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public List<T> queryByPage(List<Object> params , Integer currPage,Integer pageSize) throws Exception{
-		if (params == null) {
-			params = new ArrayList<Object>();
-		}
-		if(currPage == -1 && pageSize == -1){
-			return sqlMapClient.queryForList(this.clazz.getSimpleName()+".queryByList",params);
-		}
-		return sqlMapClient.queryForList(this.clazz.getSimpleName() + ".queryByList", params, currPage, pageSize);
-	}
-
 	/** 查询总数 */
 	public Integer queryByCount(Map<String,Object> params) throws Exception {
-		if (params == null) {
-			params = new HashMap<String,Object>();
-		}
-		return (Integer) sqlMapClient.queryForObject(this.clazz.getSimpleName()+ ".count",params);
+		return this.queryByCount(params, "count");
 	}
 	
 	public Integer queryByCount(Map<String, Object> params, String sqlName) throws Exception {
 		if (params == null) {
 			params = new HashMap<String,Object>();
 		}
-		return (Integer) sqlMapClient.queryForObject(this.clazz.getSimpleName() + "." + sqlName, params);
-	}
-	
-	/** 查询序列 */
-	public Integer queryByDual() throws Exception{
-		return (Integer) sqlMapClient.queryForObject(this.clazz.getSimpleName()+".dual");
-	}
-	
-	public String queryByDualForString() throws Exception{
-		return (String) sqlMapClient.queryForObject(this.clazz.getSimpleName()+".dual");
-	}
-	/** 返回object */
-	public Object queryByObject(String sqlId) throws Exception{
-		return (Object) sqlMapClient.queryForObject(this.clazz.getSimpleName()+"."+sqlId);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public T queryByPO(Map<String,Object> params) throws SQLException{
-		if (params == null) {
-			params = new HashMap<String,Object>();
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.selectOne(this.clazz.getName() + "." + sqlName, params);
+		}catch (Exception e){
+			DEFAULT_LOGGER.error(this.clazz.getName() + "." + sqlName + " error",e);
+		}finally{
+			if(sqlSession != null){
+				sqlSession.close();
+			}
 		}
-		List<T> ts = this.sqlMapClient.queryForList(this.clazz.getSimpleName() +".query", params);
-		if(ts != null && ts.size() > 0){
+		return null;
+	}
+	
+	public Serializable queryByDual() throws Exception{
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = sqlSessionFactory.openSession();
+			return sqlSession.selectOne(this.clazz.getName() + ".dual");
+		}catch (Exception e){
+			DEFAULT_LOGGER.error(this.clazz.getName() + ".dual error",e);
+		}finally{
+			if(sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		return null;
+	}
+	
+	public T queryByPO(Map<String,Object> params) throws Exception{
+		List<T> ts = this.queryByPage(params, 1, 1);
+		if(CollectionUtils.isNotEmpty(ts)){
 			return ts.get(0);
 		}
 		return null;
@@ -166,13 +224,9 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 	/** 批量创建po */
 	public int batchCreatePO(List<T> list) throws Exception{
 		int result = 1;
-		try {
-			//将事务设置不提交
-//			sqlMapClient.getDataSource().getConnection().setAutoCommit(false);
-			//开启事务
-			sqlMapClient.startTransaction();   
-			//开始批处理
-			sqlMapClient.startBatch();        
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = this.sqlSessionFactory.openSession(ExecutorType.BATCH, false);
 			for(T t : list){
 				if (PropertyUtil.containsField(t.getClass(), "createTime")) {
 					PropertyUtil.setProperty(t, "createTime", new Date());
@@ -180,21 +234,17 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 				if (PropertyUtil.containsField(t.getClass(), "modifyTime")) {
 					PropertyUtil.setProperty(t, "modifyTime", new Date());
 				}
-				sqlMapClient.insert(this.clazz.getSimpleName() + ".add", t);
+//				this.createPO(t);
+				sqlSession.insert(this.clazz.getName() + ".add", t);
 			}
-			//结束批处理
-			sqlMapClient.executeBatch();
-			//提交事务
-			sqlMapClient.commitTransaction();
-		} catch (Exception e) {
-			result=0;
-			e.printStackTrace();
+			sqlSession.commit();
+		} catch (Exception e){
+			result = 0;
+			sqlSession.rollback();
+			DEFAULT_LOGGER.error(this.clazz.getName() + ".batchCreatePO error",e);
 		} finally {
-			try {
-				// 结束事务
-				sqlMapClient.endTransaction();
-			} catch (SQLException e) {
-				e.getMessage();
+			if(sqlSession != null){
+				sqlSession.close();
 			}
 		}
 		return result;
@@ -203,32 +253,25 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 	/** 批量更新po */
 	public int batchUpdatePO(List<T> list) throws Exception{
 		int result = 1;
-		try {
-			//将事务设置不提交
-//			sqlMapClient.getDataSource().getConnection().setAutoCommit(false);
-			//开启事务
-			sqlMapClient.startTransaction();   
-			//开始批处理
-			sqlMapClient.startBatch();        
+		SqlSession sqlSession = null;
+		try{
+			sqlSession = this.sqlSessionFactory.openSession(ExecutorType.BATCH, false);
 			for(T t : list){
 				if (PropertyUtil.containsField(t.getClass(), "modifyTime")) {
 					PropertyUtil.setProperty(t, "modifyTime", new Date());
 				}
-				sqlMapClient.update(this.clazz.getSimpleName() + ".update", t);
+//				this.createPO(t);
+//				this.updatePO(t);
+				sqlSession.update(this.clazz.getName() + ".update", t);
 			}
-			//结束批处理
-			sqlMapClient.executeBatch();
-			//提交事务
-			sqlMapClient.commitTransaction();
-		} catch (Exception e) {
-			result=-1;
-			e.printStackTrace();
-		} finally {
-			try {
-				// 结束事务
-				sqlMapClient.endTransaction();
-			} catch (SQLException e) {
-				e.getMessage();
+			sqlSession.commit();
+		}catch (Exception e){
+			result = 0;
+			sqlSession.rollback();
+			DEFAULT_LOGGER.error(this.clazz.getName() + ".batchUpdatePO error",e);
+		}finally{
+			if(sqlSession != null){
+				sqlSession.close();
 			}
 		}
 		return result;
@@ -237,48 +280,41 @@ public abstract class BaseDaoSupport<T> extends BaseDaoiBatis  {
 	/** 批量删除po */
 	public int batchDeletePO(List<T> list) throws Exception{
 		int result = 1;
-		try {
-			//将事务设置不提交
-//			sqlMapClient.getDataSource().getConnection().setAutoCommit(false);
-			//开启事务
-			sqlMapClient.startTransaction();   
-			//开始批处理
-			sqlMapClient.startBatch();        
-			for(T t : list){
-				sqlMapClient.delete(this.clazz.getSimpleName() + ".delete", t);
+		
+		SqlSession sqlSession = null;
+		
+		try{
+			sqlSession = this.sqlSessionFactory.openSession(ExecutorType.BATCH, false);
+			for(T t: list){
+				sqlSession.delete(this.clazz.getName() + ".delete", t);
 			}
-			//结束批处理
-			sqlMapClient.executeBatch();
-			//提交事务
-			sqlMapClient.commitTransaction();
-		} catch (Exception e) {
-			result=-1;
-			e.printStackTrace();
-		} finally {
-			try {
-				// 结束事务
-				sqlMapClient.endTransaction();
-			} catch (SQLException e) {
-				e.getMessage();
+			sqlSession.commit();
+		} catch (Exception e){
+			result = 0;
+			sqlSession.rollback();
+			DEFAULT_LOGGER.error(this.clazz.getName() + ".batchDeletePO error",e);
+		} finally{
+			if(sqlSession != null){
+				sqlSession.close();
 			}
 		}
+		
 		return result;
 	}
-
-	/** 
-	 * @return sqlExecutor 
-	 */
-	public SqlExecutor getSqlExecutor() {
-		return sqlExecutor;
-	}
-
-	/**
-	 * @param sqlExecutor the sqlExecutor to set
-	 */
-	public void setSqlExecutor(SqlExecutor sqlExecutor) {
-		this.sqlExecutor = sqlExecutor;
-	}
 	
-	
+	public String queryByDualForString() throws Exception{
+	    SqlSession sqlSession = null;
+        try{
+            sqlSession = sqlSessionFactory.openSession();
+            return sqlSession.selectOne(this.clazz.getName() + ".dual");
+        }catch (Exception e){
+            DEFAULT_LOGGER.error(this.clazz.getName() + ".dual" + " error",e);
+        }finally{
+            if(sqlSession != null){
+                sqlSession.close();
+            }
+        }
+        return null;
+	}
 
 }
