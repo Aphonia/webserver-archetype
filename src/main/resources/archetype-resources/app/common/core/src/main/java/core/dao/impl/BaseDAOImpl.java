@@ -10,7 +10,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import ${package}.core.dao.BaseDao;
+import ${package}.core.dao.BaseDAO;
 import ${package}.core.utils.LoggerFactary;
 import ${package}.core.utils.PropertyUtil;
 
@@ -25,7 +25,7 @@ import ${package}.core.utils.PropertyUtil;
  * @updateInfo
  */
 public abstract class BaseDaoImpl<T> extends BaseDaoSupport<T> implements
-		BaseDao<T> {
+		BaseDAO<T> {
 
 	/*** 构造函数 */
 	public BaseDaoImpl(Class<T> clazz) {

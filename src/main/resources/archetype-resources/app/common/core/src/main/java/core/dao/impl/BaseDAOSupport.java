@@ -30,7 +30,7 @@ import ${package}.core.utils.PropertyUtil;
  * @date 2013-6-25 下午04:59:42
  * @updateInfo
  */
-public abstract class BaseDaoSupport<T> {
+public abstract class BaseDAOSupport<T> {
 	
 	
 	/** 泛型类 */

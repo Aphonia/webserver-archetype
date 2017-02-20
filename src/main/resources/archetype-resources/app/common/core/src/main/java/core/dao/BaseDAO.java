@@ -12,11 +12,11 @@ import java.util.Map;
 
 /** 
  * 基础dao接口
- * @ClassName: BaseDao 
+ * @ClassName: BaseDAO 
  * @version 1.0 2013-8-1 上午10:15:49
  * @lastUpdateTime 2013-8-1 上午10:15:49 
  */
-public interface BaseDao<T> {
+public interface BaseDAO<T> {
 	
 	/**
 	 * id查找po
