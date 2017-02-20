@@ -37,7 +37,7 @@
 								</fileSet>
 							</fileSets>
 						</module>
-						<module id="${rootArtifactId}-biz-shared" dir="facade" name="${rootArtifactId}-biz-facade">
+						<module id="${rootArtifactId}-biz-shared" dir="shared" name="${rootArtifactId}-biz-shared">
 							<fileSets>
 								<fileSet filtered="true" encoding="UTF-8" packaged="true">
 									<directory>src/main/java</directory>
@@ -65,6 +65,7 @@
 								</fileSet>
 							</fileSets>
 						</module>
+						
 						<module id="${rootArtifactId}-biz-service" dir="service" name="${rootArtifactId}-biz-service">
 							<fileSets>
 								<fileSet filtered="true" encoding="UTF-8" packaged="true">
