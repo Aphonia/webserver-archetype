@@ -37,6 +37,34 @@
 								</fileSet>
 							</fileSets>
 						</module>
+						<module id="${rootArtifactId}-biz-shared" dir="facade" name="${rootArtifactId}-biz-facade">
+							<fileSets>
+								<fileSet filtered="true" encoding="UTF-8" packaged="true">
+									<directory>src/main/java</directory>
+									<includes>
+										<include>**/*.java</include>
+									</includes>
+								</fileSet>
+								<fileSet filtered="true" encoding="UTF-8" packaged="true">
+									<directory>src/test/java</directory>
+									<includes>
+										<include>**/*.java</include>
+									</includes>
+								</fileSet>
+								<fileSet filtered="true" encoding="UTF-8" packaged="false">
+									<directory>src/test/resources</directory>
+									<includes>
+										<include>**/*.xml</include>
+									</includes>
+								</fileSet>
+								<fileSet filtered="true" encoding="UTF-8" packaged="false">
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>**/*.xml</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+						</module>
 						<module id="${rootArtifactId}-biz-service" dir="service" name="${rootArtifactId}-biz-service">
 							<fileSets>
 								<fileSet filtered="true" encoding="UTF-8" packaged="true">
