@@ -6,6 +6,7 @@
  */
 package ${package}.core.dao.impl;
 
+import java.awt.SystemColor;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public abstract class BaseDAOSupport<T> {
 	/** 泛型类 */
 	private final Class<T> clazz;
 	
-	private static final Logger DEFAULT_LOGGER = Logger.getLogger(BaseDaoSupport.class);
+	private static final java.util.logging.Logger DEFAULT_LOGGER = Logger.getLogger(BaseDAOSupport.class);
 	
 	@Resource
 	protected SqlSessionFactory sqlSessionFactory;
@@ -45,7 +46,7 @@ public abstract class BaseDAOSupport<T> {
 	
 	
 	/** 构造函数 */
-	public BaseDaoSupport(Class<T> clazz) {
+	public BaseDAOSupport(Class<T> clazz) {
 		this.clazz = clazz;
 	}
 
@@ -152,6 +153,7 @@ public abstract class BaseDAOSupport<T> {
 	
 	/** 调用sql */
 	public List<T> queryByPage(Map<String,Object> params,String sqlId,Integer currPage,Integer pageSize) throws Exception{
+		long start = System.currentTimeMillis();
 		if (params == null) {
 			params = new HashMap<String,Object>();
 		}
@@ -170,6 +172,10 @@ public abstract class BaseDAOSupport<T> {
 			if(sqlSession != null){
 				sqlSession.close();
 			}
+		}
+		long diff = System.currentTimeMillis() - start;
+		if(diff > 200){
+			DEFAULT_LOGGER.warning( "sql " + this.clazz.getName() + "." + sqlId + " execute time[" + diff + "ms]"  );
 		}
 		return null;
 	}

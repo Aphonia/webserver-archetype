@@ -28,13 +28,13 @@ public abstract class BaseDaoImpl<T> extends BaseDaoSupport<T> implements
 		BaseDAO<T> {
 
 	/*** 构造函数 */
-	public BaseDaoImpl(Class<T> clazz) {
+	public BaseDAOImpl(Class<T> clazz) {
 		super(clazz);
 	}
 
 	/** 日志 */
 	protected static final Logger logger = LoggerFactary
-			.getLogger(BaseDaoImpl.class.getSimpleName());
+			.getLogger(BaseDAOImpl.class.getSimpleName());
 
 	/**
 	 * 创建po
