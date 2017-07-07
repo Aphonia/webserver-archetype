@@ -18,6 +18,11 @@
 			<artifactId>${rootArtifactId}-biz-shared</artifactId>
 			<version>${version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${groupId}</groupId>
+			<artifactId>${rootArtifactId}-biz-service</artifactId>
+			<version>${version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>dom4j</groupId>

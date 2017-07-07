@@ -1,7 +1,7 @@
 /**
  * created liming.lm 2014年9月28日
  */
-package ${package}.core.result;
+package ${package};
 
 import java.io.Serializable;
 

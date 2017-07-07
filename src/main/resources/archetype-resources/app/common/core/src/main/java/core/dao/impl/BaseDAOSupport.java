@@ -37,7 +37,7 @@ public abstract class BaseDAOSupport<T> {
 	/** 泛型类 */
 	private final Class<T> clazz;
 	
-	private static final java.util.logging.Logger DEFAULT_LOGGER = Logger.getLogger(BaseDAOSupport.class);
+	private static final Logger DEFAULT_LOGGER = Logger.getLogger(BaseDAOSupport.class);
 	
 	@Resource
 	protected SqlSessionFactory sqlSessionFactory;
@@ -175,7 +175,7 @@ public abstract class BaseDAOSupport<T> {
 		}
 		long diff = System.currentTimeMillis() - start;
 		if(diff > 200){
-			DEFAULT_LOGGER.warning( "sql " + this.clazz.getName() + "." + sqlId + " execute time[" + diff + "ms]"  );
+			DEFAULT_LOGGER.error( "sql " + this.clazz.getName() + "." + sqlId + " execute time[" + diff + "ms]"  );
 		}
 		return null;
 	}

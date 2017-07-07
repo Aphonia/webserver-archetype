@@ -41,9 +41,9 @@
 	<!-- 告诉velocity模板位置 -->
 	<bean id="velocityConfigurer"
 		class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
-<!-- 		<property name="resourceLoaderPath"> -->
-<!-- 			<value>${velocity.home}</value> -->
-<!-- 		</property> -->
+		<property name="resourceLoaderPath">
+			<value>WEB-INF/template</value>
+		</property>
 		<property name="configLocation" value="classpath:config/deploy/velocity.properties" />
 	</bean>
 

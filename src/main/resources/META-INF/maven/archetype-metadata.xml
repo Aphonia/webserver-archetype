@@ -182,6 +182,34 @@
 								</fileSet>
 							</fileSets>
 						</module>
+						<module id="${rootArtifactId}-common-model" dir="model" name="${rootArtifactId}-common-model">
+							<fileSets>
+								<fileSet filtered="true" encoding="UTF-8" packaged="true">
+									<directory>src/main/java</directory>
+									<includes>
+										<include>**/*.java</include>
+									</includes>
+								</fileSet>
+								<fileSet filtered="true" encoding="UTF-8" packaged="true">
+									<directory>src/test/java</directory>
+									<includes>
+										<include>**/*.java</include>
+									</includes>
+								</fileSet>
+								<fileSet filtered="true" encoding="UTF-8" packaged="false">
+									<directory>src/test/resources</directory>
+									<includes>
+										<include>**/*.xml</include>
+									</includes>
+								</fileSet>
+								<fileSet filtered="true" encoding="UTF-8" packaged="false">
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>**/*.xml</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+						</module>
 					</modules>
 				</module>
 				<module id="${rootArtifactId}-web" dir="web" name="${rootArtifactId}-web">
